@@ -13,6 +13,8 @@ Additionally, all npm packages should be separate RPMs.
 What you have to do to use this
 ===============================
 
+- Make sure you start from a clean state, or else `make clean` otherwise dependencies will be missing
+- If you changed deps, after verifying them, you can run `make regenerate-sums`
 - Create ('make fpm') or download the rpm from releases
 - Install the rpm (yum or rpm -U blah.rpm)
 - Change the file /opt/ad-ldap-connector/environ if you use a proxy
