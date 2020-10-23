@@ -1,5 +1,5 @@
-#@maintainer kang@mozilla.com
-#@update 2017-03-28
+#@maintainer gene@mozilla.com
+#@update 2020-10-23
 
 # Required RPM packaes:
 # fpm
@@ -49,26 +49,26 @@ npm_download: extract
 npm_verify: npm_download
 	cat $(NPMS) | sha256sum -c
 
-regenerate_sums: $(PKGTARBALL)
+regenerate_sums: $(PKGARCHIVE)
 	@echo Generating NEW checksums...
 	find $(PKGDIRNAME)/node_modules/ -type f -exec sha256sum {} \; > npm_modules.sha256sum
 
 extract: $(PKGDIRNAME)
 $(PKGDIRNAME): verify
-	tar xvzf $(PKGTARBALL)
+	tar xvzf $(PKGARCHIVE) || unzip $(PKGARCHIVE)
 
-download: $(PKGTARBALL)
-$(PKGTARBALL):
+download: $(PKGARCHIVE)
+$(PKGARCHIVE):
 	@echo Getting package release $(PKGVER)...
-	curl -# -L -O $(PKGPATH)$(PKGTARBALL)
+	curl -# -L -O $(PKGPATH)$(PKGARCHIVE)
 
-verify: $(PKGTARBALL)
-	@echo Verifying tarball checksum...
-	echo "$(PKGSHA256) $(PKGTARBALL)" | sha256sum -c
+verify: $(PKGARCHIVE)
+	@echo Verifying package checksum...
+	echo "$(PKGSHA256) $(PKGARCHIVE)" | sha256sum -c
 
 .PHONY: clean verify download extract npm_verify npm_download
 clean:
-	-rm $(PKGTARBALL)
+	-rm $(PKGARCHIVE)
 	-rm -r $(PKGDIRNAME)
 	-rm -r target
 	-rm *.rpm
