@@ -1,10 +1,12 @@
-This is a wrapper for Auth0's LDAP connector.
+Packaging and customizations for Auth0's AD LDAP connector
 
 # Current state
 
-The code in this repo creates checksums and verifies that the package's checksum
-matches a known-good point in time checksum. It then packages everything into a
-single RPM and which has systemd init support added to it.
+The code in this repo
+* creates checksums
+* verifies that the package's checksum matches a known-good point in time checksum.
+* patches the Auth0 code with Mozilla specific customizations
+* packages everything into a single RPM and which has systemd init support added to it.
 
 # Ideally
 
@@ -15,35 +17,26 @@ separate RPMs.
 # Build the RPM
 
 - Provision a CentOS 7 VM to work from
-  - Update to newest : `sudo yum update`
-  - Install nodejs repo : `curl -sL https://rpm.nodesource.com/setup_10.x | sudo bash -`
-  - Install packages : `sudo yum install -y git unzip rpm-build nodejs`
-  - Install ruby :
-    ```
-    sudo yum install gcc gcc-c++ patch autoconf automake bison libffi-devel libtool readline-devel sqlite-devel zlib-devel openssl-devel
-    gpg2 --keyserver hkp://pool.sks-keyservers.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
-    curl -sSL https://get.rvm.io | bash -s stable
-    source ~/.rvm/scripts/rvm
-    rvm install 2.7.2
-    rvm use 2.7.2 --default
-    ```
-  - Install fpm : `gem install --no-document fpm`
+  - `sudo yum install -y git`
+  - `git clone https://github.com/mozilla-iam/ad-ldap-connector-rpm && cd ad-ldap-connector-rpm`
+  - `make setup`
 - Determine if the [Mozilla fork](https://github.com/mozilla-iam/ad-ldap-connector)
   of https://github.com/auth0/ad-ldap-connector is up to date and has the version
   released that's desired. If not, merge upstream changes into the Mozilla fork
   and produce a release
-- `git clone https://github.com/mozilla-iam/ad-ldap-connector-rpm && cd ad-ldap-connector-rpm`
 - `make clean`
   - Make sure you start from a clean state, otherwise dependencies will be missing
 - Ensure that the version number you want to build is present in the `Makefile`
-- `make download`
 - `make fpm` to produce the RPM which calls in sequence
-  1. `make verify` which checks the hash of the archive
-  2. `make extract` which extracts the archive
-  3. `make npm_download` which fetches all the npm dependencies
-  4. `make npm_verify` which checks the hashes of all the dependencies
+  1. `make download` which fetches the archive
+  2. `make verify` which checks the hash of the archive
+  3. `make extract` which extracts the archive
+  4. `make npm_download` which fetches all the npm dependencies
+  5. `make npm_verify` which checks the hashes of all the dependencies
+  6. `make patch` which applies the Mozilla customizations to the `ad-ldap-connector`
 
 If you changed npm dependencies, after verifying them, you can run `make regenerate_sums`
+to produce a new `npm_modules.sha256sum` file
 
 # Install the RPM
 
