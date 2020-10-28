@@ -1,34 +1,73 @@
-This is a wrapper for auth0's LDAP connector.
+Packaging and customizations for Auth0's AD LDAP connector
 
-Current state
-============
-It checksums and verifies packages checksum match a known-good point in time checksum,
-packages everything into a single RPM and has systemd init support.
+# Current state
 
-Ideally
-=======
-The upstream package would need modifications to properly install without prompting the user on first install.
-Additionally, all npm packages should be separate RPMs.
+The code in this repo
+* creates checksums
+* verifies that the package's checksum matches a known-good point in time checksum.
+* patches the Auth0 code with Mozilla specific customizations
+* packages everything into a single RPM and which has systemd init support added to it.
 
-What you have to do to use this
-===============================
+# Ideally
 
-- Make sure you start from a clean state, or else `make clean` otherwise dependencies will be missing
-- If you changed deps, after verifying them, you can run `make regenerate-sums`
-- Create ('make fpm') or download the rpm from releases
-- Install the rpm (yum or rpm -U blah.rpm)
-- Change the file /opt/ad-ldap-connector/environ if you use a proxy
-- Copy over your previous certs directory and config.json. If you have no previous version you're done.
+The upstream package would need modifications to properly install without 
+prompting the user on first install. Additionally, all npm packages should be 
+separate RPMs.
 
-To run it
-=========
-First time run requires you to run it interactively to fetch the auth0 ticket: 
-  $ sudo -u ad-ldap-connector node server.js
+# Build the RPM
+
+- Provision a CentOS 7 VM to work from
+  - `sudo yum install -y git`
+  - `git clone https://github.com/mozilla-iam/ad-ldap-connector-rpm && cd ad-ldap-connector-rpm`
+  - `make setup`
+- Determine if the [Mozilla fork](https://github.com/mozilla-iam/ad-ldap-connector)
+  of https://github.com/auth0/ad-ldap-connector is up to date and has the version
+  released that's desired. If not, merge upstream changes into the Mozilla fork
+  and produce a release
+- `make clean`
+  - Make sure you start from a clean state, otherwise dependencies will be missing
+- Ensure that the version number you want to build is present in the `Makefile`
+- `make fpm` to produce the RPM which calls in sequence
+  1. `make download` which fetches the archive
+  2. `make verify` which checks the hash of the archive
+  3. `make extract` which extracts the archive
+  4. `make npm_download` which fetches all the npm dependencies
+  5. `make npm_verify` which checks the hashes of all the dependencies
+  6. `make patch` which applies the Mozilla customizations to the `ad-ldap-connector`
+
+If you changed npm dependencies, after verifying them, you can run `make regenerate_sums`
+to produce a new `npm_modules.sha256sum` file
+
+# Install the RPM
+
+- Install the rpm (`yum` or `rpm -U ad-ldap-connector-1.2.3_mozilla-1.x86_64.rpm`)
+  - This will show the following output during installation
+    ```
+    Preparing...                          ################################# [100%]
+    id: ad-ldap-connector: no such user
+    You will need to run:
+    $ cd /opt/ad-ldap-connector && sudo -u ad-ldap-connector node server.js
+    Once manually the first time in order to setup the connector. Also ensure /opt/ad-ldap-connector/environ is set.
+    Configure /opt/ad-ldap-connector/config.json afterwards and run the usual systemd commands:
+    $ systemctl start ad-ldap-connector
+    $ systemctl enable ad-ldap-connector
+    Updating / installing...
+       1:ad-ldap-connector-1.2.3_mozilla-################################# [100%]
+    ```
+- Change the file `/opt/ad-ldap-connector/environ` if you use a proxy
+- Copy over your previous certs directory and `config.json`. If you have no 
+  previous version you're done.
+
+# Run the LDAP Connector
+
+First time run is interactive in order to fetch the Auth0 ticket:
+
+    $ sudo -u ad-ldap-connector node server.js
   
-You can then modify config.json and start the daemon:
+You can then modify `config.json` and start the daemon:
 
-  $ systemctl start ad-ldap-connector
+    $ systemctl start ad-ldap-connector
   
-  $ systemctl enable ad-ldap-connector
+    $ systemctl enable ad-ldap-connector
   
-Verify it works in https://manage.auth0.com/#/connections/enterprise
+Verify it works at https://manage.auth0.com/#/connections/enterprise
