@@ -17,6 +17,7 @@ PKGNAME:=ad-ldap-connector
 PKGPATH:=https://github.com/auth0/ad-ldap-connector/archive/
 PKGSHA256:=8480a272813330fe49a0e60d17601a783ceb3660bdd195a8937160e32d400ce8
 NPMS=npm_modules.sha256sum
+RUBY_VERSION=2.7.2
 
 PKGARCHIVE:=v$(PKGVER).tar.gz
 PKGDIRNAME:=$(PKGNAME)-$(PKGVER)
@@ -34,7 +35,7 @@ fpm: extract npm_verify patch
 	mkdir -p target/usr/lib/systemd/system
 	cp -v $(PKGNAME).service target/usr/lib/systemd/system
 	cp -v environ target/opt/$(PKGNAME)/
-	~/.rvm/bin/rvm 2.7.2 do fpm -s dir -t rpm \
+	~/.rvm/bin/rvm $(RUBY_VERSION) do fpm -s dir -t rpm \
 		--rpm-user $(PKGNAME) --rpm-group $(PKGNAME) \
 		--rpm-digest sha256 \
 		--before-install pre-install.sh \
@@ -76,8 +77,8 @@ setup:
 	sudo yum install -y git unzip rpm-build nodejs gcc gcc-c++ patch autoconf automake bison libffi-devel libtool readline-devel sqlite-devel zlib-devel openssl-devel
 	gpg2 --keyserver hkp://pool.sks-keyservers.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
 	test -e ~/.rvm/scripts/rvm || curl -sSL https://get.rvm.io | bash -s stable
-	~/.rvm/bin/rvm install 2.7.2
-	~/.rvm/bin/rvm 2.7.2 do gem install --no-document fpm
+	~/.rvm/bin/rvm install $(RUBY_VERSION)
+	~/.rvm/bin/rvm $(RUBY_VERSION) do gem install --no-document fpm
 
 .PHONY: all fpm patch clean verify download extract npm_verify npm_download regenerate_sums setup
 clean:
