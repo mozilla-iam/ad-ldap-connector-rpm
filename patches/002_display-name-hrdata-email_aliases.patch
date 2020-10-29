@@ -1,0 +1,56 @@
+diff --git a/lib/profileMapper.js b/lib/profileMapper.js
+index b503e97..6f4fda9 100644
+--- a/lib/profileMapper.js
++++ b/lib/profileMapper.js
+@@ -10,16 +10,27 @@ module.exports = function (raw_data) {
+ 
+   var profile = {
+     id:          raw_data.objectGUID || raw_data.uid || raw_data.cn,
+-    displayName: raw_data.displayName,
++    displayName: raw_data['cn'],
+     name: {
+       familyName: raw_data.sn,
+       givenName: raw_data.givenName
+     },
+     nickname: raw_data['sAMAccountName'] || raw_data['cn'] || raw_data['commonName'],
+     groups: raw_data['groups'],
++    ldap_groups: raw_data['groups'],
+     emails: all_emails
+   };
+ 
++  var HRData = {
++    cost_center: raw_data['workdayCostCenter'],
++    management_level: raw_data['workdayManagementLevel'],
++    manager_name: raw_data['managerName'],
++    manager_email: raw_data['managerEmail'],
++    business_title: raw_data['workdayBusinessTitle'],
++    worker_type: raw_data['workdayDetailedWorkerType'],
++    test_value: 'empty'
++  };
++
+   profile['dn'] = raw_data['dn'];
+   profile['st'] = raw_data['st'];
+   profile['description'] = raw_data['description'];
+@@ -40,7 +51,21 @@ module.exports = function (raw_data) {
+   // profile['email_verified'] = true;
+ 
+   profile['email_verified'] = true; //LDAP emails are manually created through tickets, thus always verified
+-  profile['email_aliases'] = (raw_data['zimbraAlias'] ? [{value: raw_data.mail }] : undefined)
++
++  // On 2017-04-11 the Puppet manifest that deploys the ad-ldap-connector RPM was
++  // updated to begin overwriting the contents of this profileMapper.js which is installed
++  // via RPM
++  // That 2017 Puppet update began putting raw_data['zimbraAlias'] in profile['email_aliases']
++  // The ad-ldap-connector-rpm had always had a customized profileMapper.js which set
++  // profile['email_aliases'] to contain [{value: raw_data.mail }] which is a different format
++  // (a list of objects with a key of "value" and a value of an email addess) and the wrong
++  // data (the user's primary email address, not their email aliases which are contained in
++  // raw_data['zimbraAlias'])
++  // Now in October 2020 the Puppet manifest is updated to no longer overwrite this file
++  // and the customizations, previously made in that Puppet controlled file, are added to
++  // the RPM
++  profile['email_aliases'] = raw_data['zimbraAlias'];
++  profile['_HRData'] = HRData;
+ 
+   // This will make the profile huge:
+   // if (raw_data['thumbnailPhoto']) {
