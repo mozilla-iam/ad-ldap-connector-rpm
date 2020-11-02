@@ -7,7 +7,7 @@ ExecStart=/bin/node server.js
 WorkingDirectory=/opt/ad-ldap-connector
 Restart=always
 # Default StartLimitBurst is 5 and StartLimitIntervalSec is 10s,thus we should never
-# Get rate limited for restarr when we wait 5s (2 starts within 10s)
+# Get rate limited for restart when we wait 5s (2 starts within 10s)
 RestartSec=5
 User=ad-ldap-connector
 StandardOutput=syslog
