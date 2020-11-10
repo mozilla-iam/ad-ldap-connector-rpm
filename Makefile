@@ -1,7 +1,7 @@
 #@maintainer gene@mozilla.com
-#@update 2020-10-23
+#@update 2020-11-09
 
-# Required RPM packaes:
+# Required RPM packages:
 # fpm
 # rpm-build
 # mono-devel
@@ -10,12 +10,14 @@
 #If you change the PKGVER ensure the module list in npm_modules.sha256sum is accurate
 
 #This is the ad-ldap-connector version
-PKGVER:= 3.9.1-mozilla
+PKGVER:= 5.0.13
 #This is the packaging sub-release version
-PKGREL:= 1
+PKGREL:= 2
+PKGSUFFIX:= -mozilla
+
 PKGNAME:=ad-ldap-connector
 PKGPATH:=https://github.com/auth0/ad-ldap-connector/archive/
-PKGSHA256:=8480a272813330fe49a0e60d17601a783ceb3660bdd195a8937160e32d400ce8
+PKGSHA256:=2145b00452fba817d9733c4dce44d2a6af69c80976cfbaf74cb0aa50a81a65f8
 NPMS=npm_modules.sha256sum
 RUBY_VERSION=2.7.2
 
@@ -41,8 +43,8 @@ fpm: extract npm_verify patch
 		--before-install pre-install.sh \
 		--config-files opt/$(PKGNAME)/environ \
 		--iteration $(PKGREL) \
-		--exclude opt/$(PKGNAME)/$(PKGNAME)-$(PKGVER) \
-		-n $(PKGNAME) -v $(PKGVER) -C target
+		--exclude opt/$(PKGNAME)/$(PKGNAME)-$(PKGVER)$(PKGSUFFIX) \
+		-n $(PKGNAME) -v $(PKGVER)$(PKGSUFFIX) -C target
 
 patch: $(PKGDIRNAME)
 	@cd $(PKGDIRNAME) && find ../patches -type f -name '*.patch' -print0 | sort -z | xargs -t -0 -n 1 patch --verbose -p1 -i
