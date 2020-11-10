@@ -16,8 +16,8 @@ separate RPMs.
 
 # Build the RPM
 
-- Provision a CentOS 7 VM to work from
-  - `sudo yum install -y git`
+- Provision a CentOS 7 or CentOS 8 VM to work from
+  - `sudo yum install -y git make`
   - `git clone https://github.com/mozilla-iam/ad-ldap-connector-rpm && cd ad-ldap-connector-rpm`
   - `make setup`
 - `make clean`
