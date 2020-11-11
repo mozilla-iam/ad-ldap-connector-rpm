@@ -42,6 +42,7 @@ fpm: extract npm_verify patch
 		--rpm-digest sha256 \
 		--before-install pre-install.sh \
 		--config-files opt/$(PKGNAME)/environ \
+		--depends nodejs --depends npm \
 		--iteration $(PKGREL) \
 		--exclude opt/$(PKGNAME)/$(PKGNAME)-$(PKGVER)$(PKGSUFFIX) \
 		-n $(PKGNAME) -v $(PKGVER)$(PKGSUFFIX) -C target
