@@ -1,4 +1,4 @@
-Packaging and customizations for Auth0's AD LDAP connector
+Packaging and customizations for Auth0's [AD LDAP connector](https://github.com/auth0/ad-ldap-connector)
 
 # Current state
 
