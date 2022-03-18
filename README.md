@@ -40,16 +40,30 @@ to produce a new `npm_modules.sha256sum` file
   - This will show the following output during installation
     ```
     Preparing...                          ################################# [100%]
-    You will need to run:
+
+    You will need to...
+
+    * (if you have a proxy) Ensure you set up the proxy via a systemd dropin or unit file.
+
     $ cd /opt/ad-ldap-connector && sudo -u ad-ldap-connector node server.js
-    Once manually the first time in order to setup the connector. Also ensure /opt/ad-ldap-connector/environ is set.
+    once manually the first time in order to setup the connector.
+
     Configure /opt/ad-ldap-connector/config.json afterwards and run the usual systemd commands:
     $ systemctl start ad-ldap-connector
     $ systemctl enable ad-ldap-connector
+
     Updating / installing...
        1:ad-ldap-connector-1.2.3_mozilla-################################# [100%]
     ```
-- Change the file `/opt/ad-ldap-connector/environ` if you use a proxy
+- As noted, create a dropin or unit file for ad-ldap-connector.service in systemd, ala:
+  ```
+  # mkdir /etc/systemd/system/ad-ldap-connector.service.d
+  # cat << EOHEREDOC > /etc/systemd/system/ad-ldap-connector.service.d/use-proxy.conf
+  [Service]
+  Environment=http_proxy=proxy.example.com:3128
+  Environment=https_proxy=proxy.example.com:3128
+  EOHEREDOC
+  ```
 - Copy over your previous certs directory and `config.json`. If you have no 
   previous version you're done.
 

@@ -36,12 +36,10 @@ fpm: extract npm_verify patch
 	cp -vr $(PKGDIRNAME) target/opt/$(PKGNAME)
 	mkdir -p target/usr/lib/systemd/system
 	cp -v $(PKGNAME).service target/usr/lib/systemd/system
-	cp -v environ target/opt/$(PKGNAME)/
 	~/.rvm/bin/rvm $(RUBY_VERSION) do fpm -s dir -t rpm \
 		--rpm-user $(PKGNAME) --rpm-group $(PKGNAME) \
 		--rpm-digest sha256 \
 		--before-install pre-install.sh \
-		--config-files opt/$(PKGNAME)/environ \
 		--depends nodejs --depends npm \
 		--iteration $(PKGREL) \
 		--exclude opt/$(PKGNAME)/$(PKGNAME)-$(PKGVER)$(PKGSUFFIX) \
