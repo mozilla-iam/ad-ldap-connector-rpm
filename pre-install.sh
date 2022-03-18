@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-id ad-ldap-connector > /dev/null || useradd ad-ldap-connector -r -d /opt/ad-ldap-connector || {
+id ad-ldap-connector >/dev/null 2>&1 || useradd ad-ldap-connector -r -d /opt/ad-ldap-connector || {
 	echo "failed to create \"ad-ldap-connector\" user"
 	exit 1
 }

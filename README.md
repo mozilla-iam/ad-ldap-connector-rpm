@@ -40,7 +40,6 @@ to produce a new `npm_modules.sha256sum` file
   - This will show the following output during installation
     ```
     Preparing...                          ################################# [100%]
-    id: ad-ldap-connector: no such user
     You will need to run:
     $ cd /opt/ad-ldap-connector && sudo -u ad-ldap-connector node server.js
     Once manually the first time in order to setup the connector. Also ensure /opt/ad-ldap-connector/environ is set.
