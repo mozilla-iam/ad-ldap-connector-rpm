@@ -57,11 +57,11 @@ fpm: extract npm_verify patch
 	mkdir -p target/opt
 	cp -vr $(PKGDIRNAME) target/opt/$(PKGNAME)
 	mkdir -p target/usr/lib/systemd/system
-	cp -v $(PKGNAME).service target/usr/lib/systemd/system
+	cp -v sources/ad-ldap-connector.service target/usr/lib/systemd/system/
 	~/.rvm/bin/rvm $(RUBY_VERSION) do fpm -s dir -t rpm \
 		--rpm-user $(PKG_USER) --rpm-group $(PKG_GROUP) \
 		--rpm-digest sha256 \
-		--before-install pre-install.sh \
+		--before-install sources/pre-install.sh \
 		--depends nodejs --depends npm \
 		--iteration $(PKGREL) \
 		--exclude opt/$(PKGNAME)/$(PKGNAME)-$(PKGVER)$(PKGSUFFIX) \
