@@ -35,6 +35,9 @@ PKGPATH:=https://github.com/auth0/ad-ldap-connector/archive/refs/tags/
 # This filename holds checksums of all the nodejs / npm modules we install.
 NPMS=npm_modules.sha256sum
 
+# A directory that we will use as we build the package.
+BUILDDIR=buildroot
+
 # `fpm` (which will package the RPM), is a rubygem that needs at least 2.3.  CentOS7 ships
 # with 2.0.  So this is used with `rvm` (Ruby Version Manager) to provide a ruby version
 # advanced enough to let `fpm` run.  It's only used for the packaging process, not the
@@ -54,10 +57,10 @@ all: fpm
 
 fpm: extract npm_verify patch
 	# Creating package
-	mkdir -p target/opt
-	cp -vr $(PKGDIRNAME) target/opt/$(PKGNAME)
-	mkdir -p target/usr/lib/systemd/system
-	cp -v sources/ad-ldap-connector.service target/usr/lib/systemd/system/
+	mkdir -p $(BUILDDIR)/target/opt
+	cp -vr $(BUILDDIR)/$(PKGDIRNAME) $(BUILDDIR)/target/opt/$(PKGNAME)
+	mkdir -p $(BUILDDIR)/target/usr/lib/systemd/system
+	cp -v sources/ad-ldap-connector.service $(BUILDDIR)/target/usr/lib/systemd/system/
 	~/.rvm/bin/rvm $(RUBY_VERSION) do fpm -s dir -t rpm \
 		--rpm-user $(PKG_USER) --rpm-group $(PKG_GROUP) \
 		--rpm-digest sha256 \
@@ -65,33 +68,34 @@ fpm: extract npm_verify patch
 		--depends nodejs --depends npm \
 		--iteration $(PKGREL) \
 		--exclude opt/$(PKGNAME)/$(PKGNAME)-$(PKGVER)$(PKGSUFFIX) \
-		--name $(PKGNAME) --version $(PKGVER)$(PKGSUFFIX) -C target
+		--name $(PKGNAME) --version $(PKGVER)$(PKGSUFFIX) -C $(BUILDDIR)/target
 
-patch: $(PKGDIRNAME)
-	@cd $(PKGDIRNAME) && find ../patches -type f -name '*.patch' -print0 | sort -z | xargs -t -0 -n 1 patch --verbose -p1 -i
+patch: $(BUILDDIR)/$(PKGDIRNAME)
+	@cd $(BUILDDIR)/$(PKGDIRNAME) && find ../../patches -type f -name '*.patch' -print0 | sort -z | xargs -t -0 -n 1 patch --verbose -p1 -i
 
 npm_download: extract
-	@cd $(PKGDIRNAME) && npm install --production
+	@cd $(BUILDDIR)/$(PKGDIRNAME) && npm install --production
 
 npm_verify: npm_download
 	cat $(NPMS) | sha256sum -c
 
 regenerate_sums: npm_download
 	@echo Generating NEW checksums...
-	find $(PKGDIRNAME)/node_modules/ -type f -exec sha256sum {} \; > $(NPMS)
+	find $(BUILDDIR)/$(PKGDIRNAME)/node_modules/ -type f -exec sha256sum {} \; > $(NPMS)
 
-extract: $(PKGDIRNAME)
-$(PKGDIRNAME): verify
-	mkdir -p $(PKGDIRNAME) && tar zxf $(PKGARCHIVE) -C $(PKGDIRNAME) --strip-components 1
+extract: $(BUILDDIR)/$(PKGDIRNAME)
+$(BUILDDIR)/$(PKGDIRNAME): verify
+	mkdir -p $(BUILDDIR)/$(PKGDIRNAME) && tar zxf $(BUILDDIR)/$(PKGARCHIVE) -C $(BUILDDIR)/$(PKGDIRNAME) --strip-components 1
 
-download: $(PKGARCHIVE)
-$(PKGARCHIVE):
+download: $(BUILDDIR)/$(PKGARCHIVE)
+$(BUILDDIR)/$(PKGARCHIVE):
+	mkdir $(BUILDDIR)
 	@echo Getting package release $(PKGVER)...
-	curl -# -L -O $(PKGPATH)$(PKGARCHIVE)
+	curl -# -L -o $(BUILDDIR)/$(PKGARCHIVE) -O $(PKGPATH)$(PKGARCHIVE)
 
-verify: $(PKGARCHIVE)
+verify: $(BUILDDIR)/$(PKGARCHIVE)
 	@echo Verifying package checksum...
-	echo "$(PKGSHA256) $(PKGARCHIVE)" | sha256sum -c
+	echo "$(PKGSHA256) $(BUILDDIR)/$(PKGARCHIVE)" | sha256sum -c
 
 setup:
 	sudo --validate
@@ -112,7 +116,7 @@ setup:
 
 .PHONY: all fpm patch clean verify download extract npm_verify npm_download regenerate_sums setup
 clean:
-	-rm -vf $(PKGARCHIVE)
-	-rm -rvf $(PKGDIRNAME)
-	-rm -rvf target
+	-rm -vf $(BUILDDIR)/$(PKGARCHIVE)
+	-rm -rvf $(BUILDDIR)/$(PKGDIRNAME)
+	-rm -rvf $(BUILDDIR)/target
 	-rm -vf *.rpm
