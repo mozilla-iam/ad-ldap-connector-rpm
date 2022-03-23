@@ -6,18 +6,18 @@
 # * ensure the module list in the NPMS file is accurate
 
 # This is the ad-ldap-connector version
-PKGVER:= 5.0.13
+PKGVER:= 6.1.4
 # This is the RPM's sub-release version ('iteration' in `fpm` parlance)
 # Bump this when you repackage the same version of software differently.
 # Reset to 1 when you upgrade.
-PKGREL:= 2
+PKGREL:= 1
 PKGSUFFIX:= -mozilla
 
 # When you update the PKGVER:
 # * do `make download` to fetch the .tar.gz
 # * do `sha256sum` on the .tar.gz you got and save it to PKGSHA256:
 # * do `make verify` to check your work.
-PKGSHA256:=2145b00452fba817d9733c4dce44d2a6af69c80976cfbaf74cb0aa50a81a65f8
+PKGSHA256:=8cb2ae8311cbafa9d675d70dbce3beca42787fb417bea866418ae22e4119bb1c
 # This is manual work; there's no checksum on github to read/compare against.
 
 ###########################################################################
