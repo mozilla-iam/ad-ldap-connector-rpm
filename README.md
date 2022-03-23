@@ -24,7 +24,7 @@ The [docs from Auth0](https://auth0.com/docs/customize/extensions/ad-ldap-connec
   - Considering the amount of changes / installs, you probably want to do this rather than reuse a build host.
   - `sudo yum install -y git make`
   - `git clone https://github.com/mozilla-iam/ad-ldap-connector-rpm && cd ad-ldap-connector-rpm`
-  - `make setup`
+  - `make fpm-setup` if you need to install FPM.  Skip this if your server already has fpm.
 - `make clean`
   - Make sure you start from a clean state, otherwise dependencies will be missing
 - Ensure that the version number and build release number you want to create are set in the `Makefile`

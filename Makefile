@@ -97,7 +97,7 @@ verify: $(BUILDDIR)/$(PKGARCHIVE)
 	@echo Verifying package checksum...
 	echo "$(PKGSHA256) $(BUILDDIR)/$(PKGARCHIVE)" | sha256sum -c
 
-setup:
+fpm-setup:
 	sudo --validate
 	sudo yum update -y
 	test -e /etc/yum.repos.d/nodesource-el7.repo || curl -sL https://rpm.nodesource.com/setup_10.x | sudo bash -
@@ -114,7 +114,7 @@ setup:
 	@# Lastly, install fpm:
 	~/.rvm/bin/rvm $(RUBY_VERSION) do gem install --no-document fpm
 
-.PHONY: all fpm patch clean verify download extract npm_verify npm_download regenerate_sums setup
+.PHONY: all fpm patch clean verify download extract npm_verify npm_download regenerate_sums fpm-setup
 clean:
 	-rm -vf $(BUILDDIR)/$(PKGARCHIVE)
 	-rm -rvf $(BUILDDIR)/$(PKGDIRNAME)
