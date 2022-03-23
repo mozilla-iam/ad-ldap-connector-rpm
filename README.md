@@ -36,7 +36,7 @@ The [docs from Auth0](https://auth0.com/docs/customize/extensions/ad-ldap-connec
     * If you changed versions, you almost certainly changed NPM dependencies.  Run `make regenerate_sums` to produce a new `npm_modules.sha256sum` file, or you will fail verification.
   5. `make npm_verify` which checks the hashes of all the dependencies
   6. `make patch` which applies the Mozilla customizations to the `ad-ldap-connector`
-- `make fpm` to produce the RPM (which calls the above in sequence)
+- `make rpm` to produce the RPM (which calls the above in sequence)
 
 
 # Install the RPM

@@ -53,9 +53,9 @@ SHELL:=/bin/bash
 
 # And here's the magic recipes:
 
-all: fpm
+all: rpm
 
-fpm: extract npm_verify patch
+rpm: extract npm_verify patch
 	# Creating package
 	mkdir -p $(BUILDDIR)/target/opt
 	cp -vr $(BUILDDIR)/$(PKGDIRNAME) $(BUILDDIR)/target/opt/$(PKGNAME)
