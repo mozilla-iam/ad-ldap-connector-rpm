@@ -1,0 +1,4 @@
+# Don't commit the building area
+buildroot
+# And don't commit any RPMs we build
+/*.rpm
