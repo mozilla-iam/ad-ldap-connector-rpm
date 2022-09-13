@@ -13,10 +13,6 @@ User=ad-ldap-connector
 StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier=ad-ldap-connector
-#Recent systemd only
-#PassEnvironment=http_proxy
-#Older systemd ;-)
-EnvironmentFile=/opt/ad-ldap-connector/environ
 
 [Install]
 WantedBy=multi-user.target
