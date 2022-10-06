@@ -10,7 +10,7 @@ PKGVER:= 6.1.8
 # This is the RPM's sub-release version ('iteration' in `fpm` parlance)
 # Bump this when you repackage the same version of software differently.
 # Reset to 1 when you upgrade.
-PKGREL:= 2
+PKGREL:= 3
 PKGSUFFIX:= -mozilla
 
 # When you update the PKGVER:
@@ -83,9 +83,6 @@ extract: $(BUILDDIR)/$(PKGDIRNAME)
 $(BUILDDIR)/$(PKGDIRNAME): $(BUILDDIR)/$(PKGARCHIVE) verify
 	mkdir -p $(BUILDDIR)/$(PKGDIRNAME) && tar zxf $(BUILDDIR)/$(PKGARCHIVE) -C $(BUILDDIR)/$(PKGDIRNAME) --strip-components 1
 
-patch: | $(BUILDDIR)/$(PKGDIRNAME)
-	@cd $(BUILDDIR)/$(PKGDIRNAME) && cp -v ../../sources/profileMapper_local.js lib/profileMapper_local.js
-
 npm_download: | $(BUILDDIR)/$(PKGDIRNAME)
 	@cd $(BUILDDIR)/$(PKGDIRNAME) && npm install --production
 
@@ -98,7 +95,7 @@ regenerate_sums: $(BUILDDIR)/$(PKGDIRNAME) npm_download
 
 all: rpm
 
-rpm: patch npm_verify
+rpm: npm_verify | $(BUILDDIR)/$(PKGDIRNAME)
 	# Creating package
 	mkdir -p $(BUILDDIR)/target/opt
 	cp -vr $(BUILDDIR)/$(PKGDIRNAME) $(BUILDDIR)/target/opt/$(PKGNAME)
@@ -117,7 +114,7 @@ fpm-setup:
 	sudo --validate
 	sudo yum update -y
 	test -e /etc/yum.repos.d/nodesource-el7.repo || curl -sL https://rpm.nodesource.com/setup_10.x | sudo bash -
-	sudo yum install -y git unzip rpm-build nodejs gcc gcc-c++ patch autoconf automake bison libffi-devel libtool readline-devel sqlite-devel zlib-devel openssl-devel
+	sudo yum install -y git unzip rpm-build nodejs gcc gcc-c++ autoconf automake bison libffi-devel libtool readline-devel sqlite-devel zlib-devel openssl-devel
 	@# This command comes from the rvm installer.  However, since keyservers are garbage, it's no good to us anymore.
 	@#gpg2 --keyserver hkp://pool.sks-keyservers.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
 	@# Instead, we import directly from the RVM folks:
@@ -130,7 +127,7 @@ fpm-setup:
 	@# Lastly, install fpm:
 	~/.rvm/bin/rvm $(RUBY_VERSION) do gem install --no-document fpm
 
-.PHONY: all fpm patch clean verify download extract npm_verify npm_download regenerate_sums fpm-setup
+.PHONY: all fpm clean verify download extract npm_verify npm_download regenerate_sums fpm-setup
 clean:
 	-rm -rvf $(BUILDDIR)
 	-rm -vf *.rpm
