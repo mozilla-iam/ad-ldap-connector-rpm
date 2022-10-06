@@ -6,18 +6,18 @@
 # * ensure the module list in the NPMS file is accurate
 
 # This is the ad-ldap-connector version
-PKGVER:= 6.1.4
+PKGVER:= 6.1.8
 # This is the RPM's sub-release version ('iteration' in `fpm` parlance)
 # Bump this when you repackage the same version of software differently.
 # Reset to 1 when you upgrade.
-PKGREL:= 1
+PKGREL:= 2
 PKGSUFFIX:= -mozilla
 
 # When you update the PKGVER:
 # * do `make download` to fetch the .tar.gz
 # * do `sha256sum` on the .tar.gz you got and save it to PKGSHA256:
 # * do `make verify` to check your work.
-PKGSHA256:=8cb2ae8311cbafa9d675d70dbce3beca42787fb417bea866418ae22e4119bb1c
+PKGSHA256:=85ab7d3570682fb592161ea4fab49a67409833deb60c4b4f8488ef08479bb950
 # This is manual work; there's no checksum on github to read/compare against.
 
 ###########################################################################
@@ -84,7 +84,7 @@ $(BUILDDIR)/$(PKGDIRNAME): $(BUILDDIR)/$(PKGARCHIVE) verify
 	mkdir -p $(BUILDDIR)/$(PKGDIRNAME) && tar zxf $(BUILDDIR)/$(PKGARCHIVE) -C $(BUILDDIR)/$(PKGDIRNAME) --strip-components 1
 
 patch: | $(BUILDDIR)/$(PKGDIRNAME)
-	@cd $(BUILDDIR)/$(PKGDIRNAME) && find ../../patches -type f -name '*.patch' -print0 | sort -z | xargs -t -0 -n 1 patch --verbose -p1 -i
+	@cd $(BUILDDIR)/$(PKGDIRNAME) && cp -v ../../sources/profileMapper_local.js lib/profileMapper_local.js
 
 npm_download: | $(BUILDDIR)/$(PKGDIRNAME)
 	@cd $(BUILDDIR)/$(PKGDIRNAME) && npm install --production
@@ -94,7 +94,7 @@ npm_verify: $(NPMS) npm_download
 
 regenerate_sums: $(BUILDDIR)/$(PKGDIRNAME) npm_download
 	@echo Generating NEW checksums...
-	find $(BUILDDIR)/$(PKGDIRNAME)/node_modules/ -type f -exec sha256sum {} \; > $(NPMS)
+	find $(BUILDDIR)/$(PKGDIRNAME)/node_modules/ -type f -exec sha256sum {} \; | sort -k2 > $(NPMS)
 
 all: rpm
 
