@@ -6,18 +6,18 @@
 # * ensure the module list in the NPMS file is accurate
 
 # This is the ad-ldap-connector version
-PKGVER:= 6.1.4
+PKGVER:= 6.1.8
 # This is the RPM's sub-release version ('iteration' in `fpm` parlance)
 # Bump this when you repackage the same version of software differently.
 # Reset to 1 when you upgrade.
-PKGREL:= 1
+PKGREL:= 3
 PKGSUFFIX:= -mozilla
 
 # When you update the PKGVER:
 # * do `make download` to fetch the .tar.gz
 # * do `sha256sum` on the .tar.gz you got and save it to PKGSHA256:
 # * do `make verify` to check your work.
-PKGSHA256:=8cb2ae8311cbafa9d675d70dbce3beca42787fb417bea866418ae22e4119bb1c
+PKGSHA256:=85ab7d3570682fb592161ea4fab49a67409833deb60c4b4f8488ef08479bb950
 # This is manual work; there's no checksum on github to read/compare against.
 
 ###########################################################################
@@ -83,9 +83,6 @@ extract: $(BUILDDIR)/$(PKGDIRNAME)
 $(BUILDDIR)/$(PKGDIRNAME): $(BUILDDIR)/$(PKGARCHIVE) verify
 	mkdir -p $(BUILDDIR)/$(PKGDIRNAME) && tar zxf $(BUILDDIR)/$(PKGARCHIVE) -C $(BUILDDIR)/$(PKGDIRNAME) --strip-components 1
 
-patch: | $(BUILDDIR)/$(PKGDIRNAME)
-	@cd $(BUILDDIR)/$(PKGDIRNAME) && find ../../patches -type f -name '*.patch' -print0 | sort -z | xargs -t -0 -n 1 patch --verbose -p1 -i
-
 npm_download: | $(BUILDDIR)/$(PKGDIRNAME)
 	@cd $(BUILDDIR)/$(PKGDIRNAME) && npm install --production
 
@@ -94,11 +91,11 @@ npm_verify: $(NPMS) npm_download
 
 regenerate_sums: $(BUILDDIR)/$(PKGDIRNAME) npm_download
 	@echo Generating NEW checksums...
-	find $(BUILDDIR)/$(PKGDIRNAME)/node_modules/ -type f -exec sha256sum {} \; > $(NPMS)
+	find $(BUILDDIR)/$(PKGDIRNAME)/node_modules/ -type f -exec sha256sum {} \; | sort -k2 > $(NPMS)
 
 all: rpm
 
-rpm: patch npm_verify
+rpm: npm_verify | $(BUILDDIR)/$(PKGDIRNAME)
 	# Creating package
 	mkdir -p $(BUILDDIR)/target/opt
 	cp -vr $(BUILDDIR)/$(PKGDIRNAME) $(BUILDDIR)/target/opt/$(PKGNAME)
@@ -117,7 +114,7 @@ fpm-setup:
 	sudo --validate
 	sudo yum update -y
 	test -e /etc/yum.repos.d/nodesource-el7.repo || curl -sL https://rpm.nodesource.com/setup_10.x | sudo bash -
-	sudo yum install -y git unzip rpm-build nodejs gcc gcc-c++ patch autoconf automake bison libffi-devel libtool readline-devel sqlite-devel zlib-devel openssl-devel
+	sudo yum install -y git unzip rpm-build nodejs gcc gcc-c++ autoconf automake bison libffi-devel libtool readline-devel sqlite-devel zlib-devel openssl-devel
 	@# This command comes from the rvm installer.  However, since keyservers are garbage, it's no good to us anymore.
 	@#gpg2 --keyserver hkp://pool.sks-keyservers.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
 	@# Instead, we import directly from the RVM folks:
@@ -130,7 +127,7 @@ fpm-setup:
 	@# Lastly, install fpm:
 	~/.rvm/bin/rvm $(RUBY_VERSION) do gem install --no-document fpm
 
-.PHONY: all fpm patch clean verify download extract npm_verify npm_download regenerate_sums fpm-setup
+.PHONY: all fpm clean verify download extract npm_verify npm_download regenerate_sums fpm-setup
 clean:
 	-rm -rvf $(BUILDDIR)
 	-rm -vf *.rpm

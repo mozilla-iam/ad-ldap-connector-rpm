@@ -5,7 +5,6 @@ Packaging and customizations for Auth0's [AD LDAP connector](https://github.com/
 The code in this repo:
 * verifies that the package's checksum matches a known-good point in time checksum.
 * creates nodejs / npm checksums
-* patches the Auth0 code with Mozilla specific customizations
 * packages everything into a single RPM which has systemd init support added to it.
 
 # Impossible Ideal World
@@ -35,7 +34,6 @@ The [docs from Auth0](https://auth0.com/docs/customize/extensions/ad-ldap-connec
   4. `make npm_download` which fetches all the npm dependencies
     * If you changed versions, you almost certainly changed NPM dependencies.  Run `make regenerate_sums` to produce a new `npm_modules.sha256sum` file, or you will fail verification.
   5. `make npm_verify` which checks the hashes of all the dependencies
-  6. `make patch` which applies the Mozilla customizations to the `ad-ldap-connector`
 - `make rpm` to produce the RPM (which calls the above in sequence)
 
 
@@ -71,6 +69,12 @@ The [docs from Auth0](https://auth0.com/docs/customize/extensions/ad-ldap-connec
   ```
 - Copy over your previous certs directory and `config.json`. If you have no 
   previous version you're done.
+
+- Ensure that `lib/profileMapper.js` has been overridden (either literally overwritten, or
+  by having something like `lib/profileMapper_local.js`, specified in `config.json` under a
+  `PROFILE_MAPPER_FILE` directive) with configurations specific to what we expect.
+  There is a sample file in `sources`.  Authoritative control of this file is managed in
+  Puppet, where configs live.
 
 # Run the LDAP Connector
 
