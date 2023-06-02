@@ -21,16 +21,6 @@ module.exports = function (raw_data) {
     emails: all_emails
   };
 
-  var HRData = {
-    cost_center: raw_data['workdayCostCenter'],
-    management_level: raw_data['workdayManagementLevel'],
-    manager_name: raw_data['managerName'],
-    manager_email: raw_data['managerEmail'],
-    business_title: raw_data['workdayBusinessTitle'],
-    worker_type: raw_data['workdayDetailedWorkerType'],
-    test_value: 'empty'
-  };
-
   profile['dn'] = raw_data['dn'];
   profile['st'] = raw_data['st'];
   profile['description'] = raw_data['description'];
@@ -55,7 +45,6 @@ module.exports = function (raw_data) {
   // The ad-ldap-connector-rpm had always had a customized profileMapper.js which set
   // profile['email_aliases'] to contain [{value: raw_data.mail }] which is a different format
   profile['email_aliases'] = raw_data['zimbraAlias'];
-  profile['_HRData'] = HRData;
 
   // This will make the profile huge:
   // if (raw_data['thumbnailPhoto']) {
