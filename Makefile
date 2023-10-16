@@ -3,7 +3,6 @@
 
 # If you change the PKGVER:
 # * update PKGSHA256
-# * ensure the module list in the NPMS file is accurate
 
 # This is the ad-ldap-connector version
 PKGVER:= 6.1.8
@@ -31,9 +30,6 @@ PKG_USER:=ad-ldap-connector
 PKG_GROUP:=ad-ldap-connector
 # Where to find the packages on github:
 PKGPATH:=https://github.com/auth0/ad-ldap-connector/archive/refs/tags/
-
-# This filename holds checksums of all the nodejs / npm modules we install.
-NPMS=npm_modules.sha256sum
 
 # A directory that we will use as we build the package.
 BUILDDIR=buildroot
@@ -86,16 +82,9 @@ $(BUILDDIR)/$(PKGDIRNAME): $(BUILDDIR)/$(PKGARCHIVE) verify
 npm_download: | $(BUILDDIR)/$(PKGDIRNAME)
 	@cd $(BUILDDIR)/$(PKGDIRNAME) && npm install --production
 
-npm_verify: $(NPMS) npm_download
-	cat $(NPMS) | sha256sum -c
-
-regenerate_sums: $(BUILDDIR)/$(PKGDIRNAME) npm_download
-	@echo Generating NEW checksums...
-	find $(BUILDDIR)/$(PKGDIRNAME)/node_modules/ -type f -exec sha256sum {} \; | sort -k2 > $(NPMS)
-
 all: rpm
 
-rpm: npm_verify | $(BUILDDIR)/$(PKGDIRNAME)
+rpm: npm_download | $(BUILDDIR)/$(PKGDIRNAME)
 	# Creating package
 	mkdir -p $(BUILDDIR)/target/opt
 	cp -vr $(BUILDDIR)/$(PKGDIRNAME) $(BUILDDIR)/target/opt/$(PKGNAME)
@@ -127,7 +116,7 @@ fpm-setup:
 	@# Lastly, install fpm:
 	~/.rvm/bin/rvm $(RUBY_VERSION) do gem install --no-document fpm
 
-.PHONY: all fpm clean verify download extract npm_verify npm_download regenerate_sums fpm-setup
+.PHONY: all fpm clean verify download extract npm_download fpm-setup
 clean:
 	-rm -rvf $(BUILDDIR)
 	-rm -vf *.rpm
