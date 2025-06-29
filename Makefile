@@ -1,23 +1,18 @@
 #@maintainer gene@mozilla.com
 #@update 2020-11-09
 
-# If you change the PKGVER:
-# * update PKGSHA256
+SOURCE_URL:=https://github.com/auth0/ad-ldap-connector.git
+# The source version is the tag or commit we'll use from ^
+SOURCE_VERSION:=0d2267c73ba96edbe420f30033233042bee5da67
 
-# This is the ad-ldap-connector version
-PKGVER:= 6.1.8
+# This is the ad-ldap-connector version for RPM purposes.  This doesn't
+# necessarily match the source version because auth0 stopped tagging packages.
+PKGVER:= 6.2.0
 # This is the RPM's sub-release version ('iteration' in `fpm` parlance)
 # Bump this when you repackage the same version of software differently.
 # Reset to 1 when you upgrade.
-PKGREL:= 3
-PKGSUFFIX:= -mozilla
-
-# When you update the PKGVER:
-# * do `make download` to fetch the .tar.gz
-# * do `sha256sum` on the .tar.gz you got and save it to PKGSHA256:
-# * do `make verify` to check your work.
-PKGSHA256:=85ab7d3570682fb592161ea4fab49a67409833deb60c4b4f8488ef08479bb950
-# This is manual work; there's no checksum on github to read/compare against.
+PKGREL:= 1
+PKGSUFFIX:= _mozilla
 
 ###########################################################################
 # You -shouldn't- need to modify below this point.  But reading can't hurt.
@@ -28,13 +23,10 @@ PKGSHA256:=85ab7d3570682fb592161ea4fab49a67409833deb60c4b4f8488ef08479bb950
 PKGNAME:=ad-ldap-connector
 PKG_USER:=ad-ldap-connector
 PKG_GROUP:=ad-ldap-connector
-# Where to find the packages on github:
-PKGPATH:=https://github.com/auth0/ad-ldap-connector/archive/refs/tags/
 
 # A directory that we will use as we build the package.
 BUILDDIR=buildroot
 
-PKGARCHIVE:=v$(PKGVER).tar.gz
 PKGDIRNAME:=$(PKGNAME)-$(PKGVER)
 
 # Required for the fancy checksumming
@@ -47,21 +39,15 @@ SHELL:=/bin/bash
 $(BUILDDIR):
 	mkdir -p $@
 
-download: $(BUILDDIR)/$(PKGARCHIVE)
-$(BUILDDIR)/$(PKGARCHIVE): | $(BUILDDIR)
-	@echo Getting package release $(PKGVER)...
-	curl -# -L -o $(BUILDDIR)/$(PKGARCHIVE) -O $(PKGPATH)$(PKGARCHIVE)
-
-verify: $(BUILDDIR)/$(PKGARCHIVE)
-	@echo Verifying package checksum...
-	echo "$(PKGSHA256) $(BUILDDIR)/$(PKGARCHIVE)" | sha256sum -c
+download: $(BUILDDIR)/$(PKGDIRNAME)
+$(BUILDDIR)/$(PKGDIRNAME): | $(BUILDDIR)
+	git clone $(SOURCE_URL) $(BUILDDIR)/$(PKGDIRNAME)
 
 extract: $(BUILDDIR)/$(PKGDIRNAME)
-$(BUILDDIR)/$(PKGDIRNAME): $(BUILDDIR)/$(PKGARCHIVE) verify
-	mkdir -p $(BUILDDIR)/$(PKGDIRNAME) && tar zxf $(BUILDDIR)/$(PKGARCHIVE) -C $(BUILDDIR)/$(PKGDIRNAME) --strip-components 1
+	git -C $(BUILDDIR)/$(PKGDIRNAME) checkout --detach $(SOURCE_VERSION)
 
 npm_download: | $(BUILDDIR)/$(PKGDIRNAME)
-	@cd $(BUILDDIR)/$(PKGDIRNAME) && npm install --production
+	@cd $(BUILDDIR)/$(PKGDIRNAME) && npm install --omit=dev
 
 all: rpm
 
@@ -80,7 +66,7 @@ rpm: npm_download | $(BUILDDIR)/$(PKGDIRNAME)
 		--exclude opt/$(PKGNAME)/$(PKGNAME)-$(PKGVER)$(PKGSUFFIX) \
 		--name $(PKGNAME) --version $(PKGVER)$(PKGSUFFIX) -C $(BUILDDIR)/target
 
-.PHONY: all rpm clean verify download extract npm_download
+.PHONY: all rpm clean download extract npm_download
 clean:
 	-rm -rvf $(BUILDDIR)
 	-rm -vf *.rpm
