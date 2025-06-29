@@ -19,7 +19,7 @@ The [docs from Auth0](https://auth0.com/docs/customize/extensions/ad-ldap-connec
 
 # Build the RPM
 
-- Provision a CentOS 7 or CentOS 8 VM to work from.
+- Provision a Rocky 9 VM to work from.
   - Considering the amount of changes / installs, you probably want to do this rather than reuse a build host.
   - `sudo yum install -y git make`
   - `git clone https://github.com/mozilla-iam/ad-ldap-connector-rpm && cd ad-ldap-connector-rpm`
