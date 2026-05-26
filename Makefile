@@ -51,7 +51,7 @@ npm_download: | $(BUILDDIR)/$(PKGDIRNAME)
 
 all: rpm
 
-rpm: npm_download | $(BUILDDIR)/$(PKGDIRNAME)
+rpm: extract npm_download | $(BUILDDIR)/$(PKGDIRNAME)
 	# Creating package
 	mkdir -p $(BUILDDIR)/target/opt
 	cp -vr $(BUILDDIR)/$(PKGDIRNAME) $(BUILDDIR)/target/opt/$(PKGNAME)
